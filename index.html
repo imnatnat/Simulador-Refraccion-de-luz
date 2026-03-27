@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Refracción de Luz</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #000; }
+  body {
+    font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+    color: #fff;
+    display: flex; flex-direction: column;
+    height: 100vh; overflow: hidden;
+  }
+ 
+  /* TOP BAR */
+  .topbar {
+    background: #000;
+    display: flex; align-items: center;
+    padding: 10px 20px; flex-shrink: 0;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .topbar h1 { font-size: 13px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #fff; flex:1; }
+  .topbar .sub { font-size: 11px; color: #444; letter-spacing: 0.05em; }
+ 
+  .main { display: flex; flex: 1; min-height: 0; }
+ 
+  /* SCENE */
+  .scene-wrap {
+    position: relative; flex: 1; overflow: hidden; cursor: default;
+    background: #000;
+  }
+ 
+  /* top half */
+  .half-top {
+    position: absolute; top: 0; left: 0; right: 0; height: 50%;
+    background: #e8e8e8;
+  }
+  /* bottom half */
+  .half-bot {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
+    transition: background 0.3s;
+  }
+  /* interface */
+  .interface-line {
+    position: absolute; top: 50%; left: 0; right: 0;
+    height: 1px; background: #2a2a2a;
+  }
+  .normal-line {
+    position: absolute; left: 50%; top: 0; bottom: 0; width: 0;
+    border-left: 1px dashed #2a2a2a;
+  }
+ 
+  .lbl-top {
+    position: absolute; top: 16px; left: 20px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #333;
+  }
+  .lbl-bot {
+    position: absolute; top: calc(50% + 14px); left: 20px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; transition: color 0.3s;
+  }
+  .lbl-n {
+    position: absolute; top: calc(50% + 28px); left: 20px;
+    font-size: 22px; font-weight: 700; color: inherit;
+    letter-spacing: -0.02em;
+  }
+ 
+  .ray-svg {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+  }
+ 
+  .angle-tag {
+    position: absolute;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+    background: #e8e8e8; border: 1px solid #222;
+    padding: 2px 7px; border-radius: 4px;
+    pointer-events: none; white-space: nowrap;
+  }
+ 
+  .flashlight {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  cursor: grab; user-select: none;
+  transform-origin: center center;
+}
+  .flashlight:active { cursor: grabbing; }
+ 
+  .hint {
+    position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+    font-size: 10px; color: #222; letter-spacing: 0.08em;
+    text-transform: uppercase; pointer-events: none;
+  }
+ 
+  .controls {
+    width: 220px; flex-shrink: 0;
+    background: #e8e8e8;
+    border-left: 1px solid #111;
+    display: flex; flex-direction: column;
+    gap: 1px; overflow-y: auto;
+  }
+ 
+  .ctrl-section {
+    padding: 16px;
+    border-bottom: 1px solid #111;
+  }
+  .ctrl-section h3 {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: #444; margin-bottom: 12px;
+  }
+ 
+  .med-btn {
+    width: 100%; padding: 10px 12px; margin: 3px 0;
+    border: 1px solid #1a1a1a;
+    border-radius: 8px; background: #e8e8e8;
+    color: #555; font-family: inherit;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: all 0.15s;
+  }
+  .med-btn:hover { border-color: #333; color: #aaa; }
+  .med-btn.active { border-color: #fff; color: #fff; background: #111; }
+  .med-btn .n-val { font-size: 10px; font-weight: 400; color: #333; }
+  .med-btn.active .n-val { color: #888; }
+ 
+  /* angle slider */
+  .slider-lbl-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .slider-lbl-row label { font-size: 10px; color: #444; letter-spacing: 0.06em; text-transform: uppercase; }
+  .slider-val {
+    font-size: 20px; font-weight: 700; color: #444; letter-spacing: -0.02em;
+  }
+  input[type=range] {
+    width: 100%; accent-color: #fff;
+    -webkit-appearance: none; height: 2px;
+    background: #222; border-radius: 2px; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px;
+    border-radius: 50%; background: #fff; cursor: pointer;
+  }
+ 
+  /* result */
+  .result-grid { 
+    display: grid; grid-template-columns: 1fr 1fr; 
+    background: #111; 
+    border-bottom: 1px solid #111; 
+}
+
+  .result-tile {
+    background: #e8e8e8;
+    padding: 12px 10px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    min-height: 70px;
+  }
+
+  .result-tile:nth-child(odd) {
+  border-right: 1px solid #111;
+}
+
+  .result-tile .t-label { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #444; }
+  .result-tile .t-val { font-size: 24px; font-weight: 700; color: #444; letter-spacing: -0.03em; line-height: 1; margin-top: 6px; }
+  .result-tile .t-unit { font-size: 24px; color: #444; margin-left: 2px; position: relative; top: 0px;
+}
+  /* formula */
+  .formula-section {
+    padding: 16px; margin-top: auto;
+    border-top: 1px solid #111;
+  }
+  .formula-section .f-label { font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #333; margin-bottom: 8px; }
+  .formula-section .f-eq { font-size: 13px; font-weight: 700; color: #444; letter-spacing: 0.02em; }
+  .formula-section .f-sub { font-size: 10px; color: #333; margin-top: 4px; letter-spacing: 0.04em; }
+ 
+  .tir-tile {
+    display: none; margin: 0 16px;
+    background: #0f0000;
+    border: 1px solid #330000;
+    border-radius: 8px; padding: 10px 12px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: #ff4444; text-align: center;
+  }
+  .tir-tile.show { display: block; }
+</style>
+</head>
+<body>
+ 
+<div class="topbar">
+  <h1>Refracción de Luz</h1>
+  <span class="sub">Ley de Snell-Descartes</span>
+</div>
+ 
+<div class="main">
+ 
+  <!-- SCENE -->
+  <div class="scene-wrap" id="scene">
+    <div class="half-top"></div>
+    <div class="half-bot" id="half-bot"></div>
+    <div class="interface-line"></div>
+    <div class="normal-line"></div>
+    <div class="lbl-top">Aire</div>
+    <div class="lbl-bot" id="lbl-bot-name">AGUA</div>
+    <div class="lbl-n" id="lbl-bot-n">1.33</div>
+    <svg class="ray-svg" id="ray-svg"></svg>
+    <div class="angle-tag" id="tag-i" style="color:#ff4444">θ₁ = 45°</div>
+    <div class="angle-tag" id="tag-r" style="color:#444">θ₂ = 32°</div>
+    <img class="flashlight" id="flashlight-img" src="flashlight.png">
+    <div class="hint">Arrastra la linterna o usa el slider</div>
+  </div>
+ 
+  <!-- SIDEBAR -->
+  <div class="controls">
+ 
+    <div class="ctrl-section">
+      <h3>Medio</h3>
+      <button class="med-btn active" id="btn-agua"   onclick="setMedium('agua')">
+        <span>Agua</span><span class="n-val">1.33</span>
+      </button>
+      <button class="med-btn" id="btn-vidrio" onclick="setMedium('vidrio')">
+        <span>Vidrio</span><span class="n-val">1.50</span>
+      </button>
+      <button class="med-btn" id="btn-aire2"  onclick="setMedium('aire2')">
+        <span>Aire</span><span class="n-val">1.00</span>
+      </button>
+    </div>
+ 
+    <div class="ctrl-section">
+      <h3>Ángulo</h3>
+      <div class="slider-lbl-row">
+        <label>θ₁ incidente</label>
+        <span class="slider-val" id="angle-disp">45°</span>
+      </div>
+      <input type="range" id="angle-slider" min="1" max="89" step="1" value="45"
+             oninput="onSlider(this.value)">
+    </div>
+ 
+    <!-- Result  -->
+    <div class="result-grid">
+      <div class="result-tile">
+        <span class="t-label">n₁ Aire</span>
+        <div><span class="t-val" id="r-n1">1.00</span></div>
+      </div>
+      <div class="result-tile">
+        <span class="t-label">n₂ Medio</span>
+        <div><span class="t-val" id="r-n2">1.33</span></div>
+      </div>
+      <div class="result-tile" style="border-top:1px solid #111">
+        <span class="t-label">θ₁ incidencia</span>
+        <div><span class="t-val" id="r-t1">45</span><span class="t-unit">°</span></div>
+      </div>
+      <div class="result-tile" style="border-top:1px solid #111">
+        <span class="t-label">θ₂ refracción</span>
+        <div><span class="t-val" id="r-t2">32</span><span class="t-unit">°</span></div>
+      </div>
+    </div>
+ 
+    <div class="tir-tile" id="tir-tile">Reflexión Total Interna</div>
+ 
+    <div class="formula-section">
+      <div class="f-label">Fórmula</div>
+      <div class="f-eq">n₁ sin θ₁ = n₂ sin θ₂</div>
+      <div class="f-sub">n = índice de refracción</div>
+    </div>
+ 
+  </div>
+</div>
+ 
+<script>
+
+console.log("Developed by @imnat.nat") 
+
+const media = {
+  agua:   { n: 1.33, bg: '#a6caec', nameColor: '#3a7aaa', name: 'AGUA'   },
+  vidrio: { n: 1.50, bg: '#b4cce8', nameColor: '#427cbf', name: 'VIDRIO' },
+  aire2:  { n: 1.00, bg: '#e8e8e8', nameColor: '#444',    name: 'AIRE'   },
+};
+ 
+let medium = 'agua';
+let theta1 = 45;
+ 
+const scene     = document.getElementById('scene');
+const svg       = document.getElementById('ray-svg');
+const halfBot   = document.getElementById('half-bot');
+const lbl_name  = document.getElementById('lbl-bot-name');
+const lbl_n     = document.getElementById('lbl-bot-n');
+const tagI      = document.getElementById('tag-i');
+const tagR      = document.getElementById('tag-r');
+const tirTile   = document.getElementById('tir-tile');
+const flCanvas = document.getElementById('flashlight-img');
+ 
+function d2r(d){ return d*Math.PI/180; }
+function r2d(r){ return r*180/Math.PI; }
+function getO(){ return { x: scene.offsetWidth/2, y: scene.offsetHeight/2 }; }
+ 
+// Position flashlight
+function flashPos(t1deg){
+  const {x:cx,y:cy} = getO();
+  const dist = Math.min(cx*0.9, cy*0.9);
+  const t = d2r(t1deg);
+  let fx = cx - Math.sin(t)*dist;
+  let fy = cy - Math.cos(t)*dist;
+  fx = Math.max(10, Math.min(cx-40, fx));
+  fy = Math.max(10, Math.min(cy-40, fy));
+  return {fx,fy};
+}
+ 
+function placeFlashlight(t1deg){
+  const {fx,fy} = flashPos(t1deg);
+  const size = flCanvas.offsetWidth;
+  flCanvas.style.left = (fx - size/2) + 'px';
+  flCanvas.style.top  = (fy - size/2) + 'px';
+  const t = d2r(t1deg);
+  const rayAngle = Math.atan2(Math.cos(t), Math.sin(t));
+  flCanvas.style.transform = `rotate(${rayAngle - Math.PI*2-0.7}rad)`;
+}
+ 
+// Draw scene
+function draw(){
+  const {x:cx,y:cy} = getO();
+  const W = scene.offsetWidth, H = scene.offsetHeight;
+  const n1=1.00, n2=media[medium].n;
+  const t1=d2r(theta1);
+  const sinT2=(n1/n2)*Math.sin(t1);
+  const tir=sinT2>1;
+  const t2=tir?null:Math.asin(sinT2);
+ 
+  const {fx,fy}=flashPos(theta1);
+  const ix=cx, iy=cy; // intersection point
+ 
+  const rayLen=Math.min(W,H)*0.65;
+ 
+  // refracted direction: right+down = (sin t2, cos t2)
+  const refrX=!tir?cx+Math.sin(t2)*rayLen:null;
+  const refrY=!tir?cy+Math.cos(t2)*rayLen:null;
+ 
+  // reflected: right+up = (sin t1, -cos t1)
+  const reflLen=Math.min(W,H)*0.4;
+  const reflX=cx+Math.sin(t1)*reflLen;
+  const reflY=cy-Math.cos(t1)*reflLen;
+ 
+  let s='';
+ 
+  // Incident ray
+  s+=`<line x1="${fx}" y1="${fy}" x2="${ix}" y2="${iy}"
+    stroke="#ff2020" stroke-width="2.5" stroke-linecap="round"/>`;
+  s+=arrowHead(fx,fy,ix,iy,'#ff2020');
+ 
+  if(!tir){
+    // Refracted
+    s+=`<line x1="${ix}" y1="${iy}" x2="${refrX}" y2="${refrY}"
+      stroke="#ff2020" stroke-width="2.5" stroke-linecap="round"/>`;
+    s+=arrowHead(ix,iy,refrX,refrY,'#ff2020');
+    // Partial reflected faint
+    s+=`<line x1="${ix}" y1="${iy}" x2="${reflX}" y2="${reflY}"
+      stroke="#ff2020" stroke-width="1" stroke-dasharray="5,5" opacity="0.6"/>`;
+  } else {
+    // TIR full reflected
+    s+=`<line x1="${ix}" y1="${iy}" x2="${reflX}" y2="${reflY}"
+      stroke="#ff4040" stroke-width="2"/>`;
+    s+=arrowHead(ix,iy,reflX,reflY,'#ff4040');
+  }
+ 
+  // Arcs 
+  const arcR1=36;
+  const incDir=Math.atan2(fy-cy, fx-cx);
+  const normUp=-Math.PI/2;
+  s+=svgArc(cx,cy,arcR1,normUp,incDir,'#ff4444',1.5);
+ 
+  if(!tir&&t2!==null){
+    const arcR2=48;
+    const refrDir=Math.atan2(refrY-cy,refrX-cx);
+    const normDown=Math.PI/2;
+    s+=svgArc(cx,cy,arcR2,normDown,refrDir,'#444444',1.5);
+  }
+ 
+  svg.innerHTML=s;
+ 
+  // Tags
+  const midA1=midAng(normUp,incDir);
+  const tR1=arcR1+16;
+  tagI.style.left=(cx+Math.cos(midA1)*tR1-16)+'px';
+  tagI.style.top =(cy+Math.sin(midA1)*tR1-9)+'px';
+  tagI.textContent='θ₁ = '+theta1+'°';
+ 
+  if(!tir&&t2!==null){
+    tagR.style.display='block';
+    const refrDir=Math.atan2(refrY-cy,refrX-cx);
+    const midA2=midAng(Math.PI/2,refrDir);
+    const tR2=48+16;
+    tagR.style.left=(cx+Math.cos(midA2)*tR2-16)+'px';
+    tagR.style.top =(cy+Math.sin(midA2)*tR2-9)+'px';
+    tagR.textContent='θ₂ = '+r2d(t2).toFixed(1)+'°';
+  } else { tagR.style.display='none'; }
+ 
+  // Results
+  document.getElementById('r-n1').textContent=n1.toFixed(2);
+  document.getElementById('r-n2').textContent=n2.toFixed(2);
+  document.getElementById('r-t1').textContent=theta1;
+  document.getElementById('r-t2').textContent=tir?'—':r2d(t2).toFixed(1);
+  tirTile.classList.toggle('show',tir);
+}
+ 
+function arrowHead(x1,y1,x2,y2,col){
+  const a=Math.atan2(y2-y1,x2-x1),L=10,s=0.35;
+  const ax=x2-L*Math.cos(a-s),ay=y2-L*Math.sin(a-s);
+  const bx=x2-L*Math.cos(a+s),by=y2-L*Math.sin(a+s);
+  return `<polygon points="${x2},${y2} ${ax},${ay} ${bx},${by}" fill="${col}"/>`;
+}
+ 
+function svgArc(cx,cy,r,a,b,col,w){
+  const x1=cx+r*Math.cos(a),y1=cy+r*Math.sin(a);
+  const x2=cx+r*Math.cos(b),y2=cy+r*Math.sin(b);
+  let diff=b-a;
+  while(diff>Math.PI) diff-=2*Math.PI;
+  while(diff<-Math.PI) diff+=2*Math.PI;
+  const sweep=diff>0?1:0;
+  const large=Math.abs(diff)>Math.PI?1:0;
+  return `<path d="M ${x1} ${y1} A ${r} ${r} 0 ${large} ${sweep} ${x2} ${y2}"
+    fill="none" stroke="${col}" stroke-width="${w}" opacity="0.85"/>`;
+}
+ 
+function midAng(a,b){
+  let d=b-a;
+  while(d>Math.PI) d-=2*Math.PI;
+  while(d<-Math.PI) d+=2*Math.PI;
+  return a+d/2;
+}
+ 
+// Medium
+function setMedium(key){
+  medium=key;
+  document.querySelectorAll('.med-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('btn-'+key).classList.add('active');
+  const m=media[key];
+  halfBot.style.background=m.bg;
+  lbl_name.style.color=m.nameColor;
+  lbl_name.textContent=m.name;
+  lbl_n.textContent = m.n.toFixed(2);
+if(key === 'aire2'){
+  lbl_n.style.setProperty('color', '#666', 'important');
+}else{
+  lbl_n.style.setProperty('color', '#fff', 'important');
+}
+  draw();
+}
+ 
+// Slider
+function onSlider(v){
+  theta1=parseInt(v);
+  document.getElementById('angle-disp').textContent=theta1+'°';
+  placeFlashlight(theta1);
+  draw();
+}
+ 
+// Drag
+let dragging=false;
+flCanvas.addEventListener('mousedown',e=>{dragging=true;e.preventDefault();});
+document.addEventListener('mousemove',e=>{
+  if(!dragging)return;
+  const {x:cx,y:cy}=getO();
+  const rect=scene.getBoundingClientRect();
+  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  const clx=Math.max(10,Math.min(cx-40,mx));
+  const cly=Math.max(10,Math.min(cy-40,my));
+  const dx=cx-clx, dy=cy-cly;
+  let nt=Math.round(r2d(Math.atan2(dx,dy)));
+  nt=Math.max(1,Math.min(89,nt));
+  theta1=nt;
+  document.getElementById('angle-slider').value=theta1;
+  document.getElementById('angle-disp').textContent=theta1+'°';
+  placeFlashlight(theta1);
+  draw();
+});
+document.addEventListener('mouseup',()=>dragging=false);
+flCanvas.addEventListener('touchstart',e=>{dragging=true;e.preventDefault();},{passive:false});
+document.addEventListener('touchmove',e=>{
+  if(!dragging)return;
+  const {x:cx,y:cy}=getO();
+  const rect=scene.getBoundingClientRect();
+  const mx=e.touches[0].clientX-rect.left, my=e.touches[0].clientY-rect.top;
+  const clx=Math.max(10,Math.min(cx-40,mx));
+  const cly=Math.max(10,Math.min(cy-40,my));
+  let nt=Math.round(r2d(Math.atan2(cx-clx,cy-cly)));
+  nt=Math.max(1,Math.min(89,nt));
+  theta1=nt;
+  document.getElementById('angle-slider').value=theta1;
+  document.getElementById('angle-disp').textContent=theta1+'°';
+  placeFlashlight(theta1);
+  draw();
+},{passive:false});
+document.addEventListener('touchend',()=>dragging=false);
+ 
+// Init
+function init(){
+  setMedium('agua');
+  placeFlashlight(theta1);
+  draw();
+}
+setTimeout(init,60);
+window.addEventListener('resize',()=>{placeFlashlight(theta1);draw();});
+</script>
+</body>
+</html>
+ 
