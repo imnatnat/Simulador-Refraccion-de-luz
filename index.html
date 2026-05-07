@@ -317,7 +317,7 @@ function placeFlashlight(t1deg){
   flCanvas.style.top  = (fy - size/2) + 'px';
   const t = d2r(t1deg);
   const rayAngle = Math.atan2(Math.cos(t), Math.sin(t));
-  flCanvas.style.transform = `rotate(${rayAngle - Math.PI*2-0.7}rad)`;
+  flCanvas.style.transform = `rotate(${rayAngle - Math.PI*2-0.3}rad)`;
 }
  
 // Draw scene
