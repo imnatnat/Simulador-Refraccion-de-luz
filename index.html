@@ -315,13 +315,12 @@ function placeFlashlight(t1deg){
 
   const size = flCanvas.offsetWidth;
 
-  // move image so eyes align with ray origin
-  const offsetX = size * 0.18;
-  const offsetY = -size * 0.08;
+const eyeX = size * 0.72;
+const eyeY = size * 0.42;
 
-  flCanvas.style.left = (fx - size/2 - offsetX) + 'px';
-  flCanvas.style.top  = (fy - size/2 - offsetY) + 'px';
-
+flCanvas.style.left = (fx - eyeX) + 'px';
+flCanvas.style.top  = (fy - eyeY) + 'px';
+  
   const t = d2r(t1deg);
   const rayAngle = Math.atan2(Math.cos(t), Math.sin(t));
 
