@@ -84,8 +84,8 @@
  
   .flashlight {
   position: absolute;
-  width: 150px;
-  height: 150px;
+  width: 100px;
+  height: 100px;
   cursor: grab; user-select: none;
   transform-origin: center center;
 }
@@ -313,11 +313,11 @@ function flashPos(t1deg){
 function placeFlashlight(t1deg){
   const {fx,fy} = flashPos(t1deg);
   const size = flCanvas.offsetWidth;
-flCanvas.style.left = (fx - size * 0.5) + 'px';  // hereeeeeee
-flCanvas.style.top  = (fy - size * 0.025) + 'px';
+flCanvas.style.left = (fx - size * 0.6) + 'px';
+flCanvas.style.top  = (fy - size * 0.75) + 'px';
   const t = d2r(t1deg);
   const rayAngle = Math.atan2(Math.cos(t), Math.sin(t));
-  flCanvas.style.transform = `rotate(${rayAngle - Math.PI*2-0.7}rad)`;
+  flCanvas.style.transform = `rotate(${rayAngle - Math.PI*2 - 0.3}rad)`;
 }
  
 // Draw scene
