@@ -313,8 +313,8 @@ function flashPos(t1deg){
 function placeFlashlight(t1deg){
   const {fx,fy} = flashPos(t1deg);
   const size = flCanvas.offsetWidth;
-flCanvas.style.left = (fx - size * 0.55) + 'px';  // hereeeeeee
-flCanvas.style.top  = (fy - size * 0.03) + 'px';
+flCanvas.style.left = (fx - size * 0.5) + 'px';  // hereeeeeee
+flCanvas.style.top  = (fy - size * 0.025) + 'px';
   const t = d2r(t1deg);
   const rayAngle = Math.atan2(Math.cos(t), Math.sin(t));
   flCanvas.style.transform = `rotate(${rayAngle - Math.PI*2-0.7}rad)`;
