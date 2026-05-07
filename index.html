@@ -312,12 +312,21 @@ function flashPos(t1deg){
  
 function placeFlashlight(t1deg){
   const {fx,fy} = flashPos(t1deg);
+
   const size = flCanvas.offsetWidth;
-flCanvas.style.left = (fx - size * 0.5) + 'px';
-flCanvas.style.top  = (fy - size * 0.1) + 'px';
+
+  // move image so eyes align with ray origin
+  const offsetX = size * 0.18;
+  const offsetY = size * 0.32;
+
+  flCanvas.style.left = (fx - size/2 - offsetX) + 'px';
+  flCanvas.style.top  = (fy - size/2 - offsetY) + 'px';
+
   const t = d2r(t1deg);
   const rayAngle = Math.atan2(Math.cos(t), Math.sin(t));
-  flCanvas.style.transform = `rotate(${rayAngle - Math.PI*2 - 0.3}rad)`;
+
+  flCanvas.style.transform =
+    `rotate(${rayAngle - Math.PI*2 - 0.3}rad)`;
 }
  
 // Draw scene
