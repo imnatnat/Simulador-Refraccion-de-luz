@@ -310,8 +310,16 @@ function flashPos(t1deg){
   return {fx,fy};
 }
  
-function placeFlashlight(t1deg){ const {fx,fy} = flashPos(t1deg); const size = flCanvas.offsetWidth; flCanvas.style.left = (fx - size * 0.5) + 'px'; flCanvas.style.top = (fy - size * 0.1) + 'px'; const t = d2r(t1deg); const rayAngle = Math.atan2(Math.cos(t), Math.sin(t)); flCanvas.style.transform = rotate(${rayAngle - Math.PI*2 - 0.3}rad); }
- 
+function placeFlashlight(t1deg){
+  const {fx,fy} = flashPos(t1deg);
+  const size = flCanvas.offsetWidth;
+  flCanvas.style.left = (fx - size/2) + 'px';
+  flCanvas.style.top  = (fy - size/2) + 'px';
+  const t = d2r(t1deg);
+  const rayAngle = Math.atan2(Math.cos(t), Math.sin(t));
+  flCanvas.style.transform = `rotate(${rayAngle - Math.PI*2-0.7}rad)`;
+}
+  
 // Draw scene
 function draw(){
   const {x:cx,y:cy} = getO();
