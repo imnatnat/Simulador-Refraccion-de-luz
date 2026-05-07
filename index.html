@@ -87,7 +87,7 @@
   width: 200px;
   height: 200px;
   cursor: grab; user-select: none;
-  transform-origin: 74% 40%;
+  transform-origin: center center;
 }
   .flashlight:active { cursor: grabbing; }
  
@@ -301,24 +301,41 @@ function getO(){ return { x: scene.offsetWidth/2, y: scene.offsetHeight/2 }; }
 // Position flashlight
 function flashPos(t1deg){
   const {x:cx,y:cy} = getO();
-  const dist = Math.min(cx*0.9, cy*0.9);
+
+  // distance from center point
+  const dist = Math.min(cx * 0.9, cy * 0.9);
+
   const t = d2r(t1deg);
-  let fx = cx - Math.sin(t)*dist;
-  let fy = cy - Math.cos(t)*dist;
-  fx = Math.max(10, Math.min(cx-40, fx));
-  fy = Math.max(10, Math.min(cy-40, fy));
-  return {fx,fy};
+
+  let fx = cx - Math.sin(t) * dist;
+  let fy = cy - Math.cos(t) * dist;
+
+  fx = Math.max(10, Math.min(cx - 40, fx));
+  fy = Math.max(10, Math.min(cy - 40, fy));
+
+  return {fx, fy};
 }
- 
+
 function placeFlashlight(t1deg){
-  const {fx,fy} = flashPos(t1deg);
+  const {fx, fy} = flashPos(t1deg);
+
   const size = flCanvas.offsetWidth;
-  flCanvas.style.left = (fx - size/2) + 'px';
-  flCanvas.style.top  = (fy - size/2) + 'px';
+
+  // Superman eye alignment offsets
+  const offsetX = size * 0.30;
+  const offsetY = size * 0.39;
+
+  flCanvas.style.left = (fx - offsetX) + 'px';
+  flCanvas.style.top  = (fy - offsetY) + 'px';
+
   const t = d2r(t1deg);
+
   const rayAngle = Math.atan2(Math.cos(t), Math.sin(t));
-  flCanvas.style.transform = `rotate(${rayAngle - Math.PI*2-0.7}rad)`;
+
+  flCanvas.style.transform =
+    `rotate(${rayAngle - Math.PI * 2 - 0.7}rad)`;
 }
+
   
 // Draw scene
 function draw(){
