@@ -210,7 +210,7 @@
     <svg class="ray-svg" id="ray-svg"></svg>
     <div class="angle-tag" id="tag-i" style="color:#ff4444">θ₁ = 45°</div>
     <div class="angle-tag" id="tag-r" style="color:#444">θ₂ = 32°</div>
-    <img class="flashlight" id="flashlight-img" src="supermannn.png">
+    <img class="flashlight" id="flashlight-img" src="test.png">
     <div class="hint">Arrastra la linterna o usa el slider</div>
   </div>
  
@@ -310,23 +310,7 @@ function flashPos(t1deg){
   return {fx,fy};
 }
  
-function placeFlashlight(t1deg){
-  const {fx,fy} = flashPos(t1deg);
-
-  const size = flCanvas.offsetWidth;
-
-const eyeX = size * 0.52;
-const eyeY = -size * 0.05;
-
-flCanvas.style.left = (fx - eyeX) + 'px';
-flCanvas.style.top  = (fy - eyeY) + 'px';
-  
-  const t = d2r(t1deg);
-  const rayAngle = Math.atan2(Math.cos(t), Math.sin(t));
-
-  flCanvas.style.transform =
-    `rotate(${rayAngle - Math.PI*2 - 0.3}rad)`;
-}
+function placeFlashlight(t1deg){ const {fx,fy} = flashPos(t1deg); const size = flCanvas.offsetWidth; flCanvas.style.left = (fx - size * 0.5) + 'px'; flCanvas.style.top = (fy - size * 0.1) + 'px'; const t = d2r(t1deg); const rayAngle = Math.atan2(Math.cos(t), Math.sin(t)); flCanvas.style.transform = rotate(${rayAngle - Math.PI*2 - 0.3}rad); }
  
 // Draw scene
 function draw(){
